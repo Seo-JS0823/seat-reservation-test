@@ -1,4 +1,15 @@
 services:
+  postgres-loadtest:
+    image: postgres:17
+    container_name: seat-postgres-loadtest
+    environment:
+      POSTGRES_DB: seat_loadtest
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - seat_postgres_loadtest_data:/var/lib/postgres/data
   postgres:
     image: postgres:17
     container_name: seat-postgres
@@ -13,3 +24,4 @@ services:
 
 volumes:
   seat_postgres_data:
+  seat_postgres_loadtest_data:
