@@ -93,7 +93,7 @@ public record LoadTestDataProperties(
 				));
 			}
 			
-			boolean validSeatRange = maxSeatsPerSession - minSeatsPerSession % 10 != 0;
+			boolean validSeatRange = (maxSeatsPerSession - minSeatsPerSession) % 10 != 0;
 			
 			if (validSeatRange) {
 				errors.add(ERROR_PERFIX_FORMATTED.formatted(
