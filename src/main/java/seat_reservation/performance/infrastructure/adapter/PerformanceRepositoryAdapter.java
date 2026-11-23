@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
+import seat_reservation.performance.domain.exception.PerformanceError;
+import seat_reservation.performance.domain.exception.PerformanceException;
 import seat_reservation.performance.domain.model.Performance;
 import seat_reservation.performance.domain.model.PerformanceSession;
 import seat_reservation.performance.domain.repository.PerformanceRepository;
@@ -39,6 +41,9 @@ public class PerformanceRepositoryAdapter implements PerformanceRepository {
 
 	@Override
 	public List<PerformanceSession> findSessionsByPerformanceId(Long performanceId) {
-		return sessionRepo.findByPerformanceId(performanceId);
+		Performance performance = performanceRepo.findById(performanceId)
+				.orElseThrow(() -> new PerformanceException(PerformanceError.PERFORMANCE_SESSION_NOT_FOUND));
+		
+		return sessionRepo.findByPerformance(performance);
 	}
 }

@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import seat_reservation.performance.domain.model.Performance;
 import seat_reservation.performance.domain.model.PerformanceSession;
 
 public interface JpaPerformanceSessionRepository extends JpaRepository<PerformanceSession, Long> {
 
-	List<PerformanceSession> findByPerformanceId(Long performanceId);
+	List<PerformanceSession> findByPerformance(Performance performance);
 
 }

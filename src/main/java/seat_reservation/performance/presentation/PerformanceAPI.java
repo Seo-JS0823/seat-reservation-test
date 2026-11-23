@@ -19,7 +19,7 @@ import seat_reservation.performance.application.PerformanceSessionInfo;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/performance")
+@RequestMapping("/api/v1/performances")
 public class PerformanceAPI {
 
 	private final PerformanceReader performanceReader;

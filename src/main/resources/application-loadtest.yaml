@@ -1,12 +1,12 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/seat_loadtest
-    
-  main:
-    web-application-type: none
+
+server:
+  port: 8081
     
 test-data:
-  enabled: false
+  enabled: true
   reset: false
   allowed-database: seat_loadtest
   performance-count: 201
