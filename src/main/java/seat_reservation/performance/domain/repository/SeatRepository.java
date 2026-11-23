@@ -1,0 +1,14 @@
+package seat_reservation.performance.domain.repository;
+
+import java.util.List;
+
+import seat_reservation.performance.domain.model.PerformanceSession;
+import seat_reservation.performance.domain.model.SessionSeat;
+
+public interface SeatRepository {
+	
+	// 특정 회차의 좌석 목록 조회
+	List<SessionSeat> findSeatsBySession(PerformanceSession session);
+	
+	SessionSeat save(SessionSeat seat);
+}
