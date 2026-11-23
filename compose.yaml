@@ -9,7 +9,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - seat_postgres_loadtest_data:/var/lib/postgres/data
+      - seat_postgres_loadtest_data:/var/lib/postgresql/data
   postgres:
     image: postgres:17
     container_name: seat-postgres
@@ -20,7 +20,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - seat_postgres_data:/var/lib/postgres
+      - seat_postgres_data:/var/lib/postgresql
 
 volumes:
   seat_postgres_data:

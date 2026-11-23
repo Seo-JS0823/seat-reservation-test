@@ -6,9 +6,6 @@ import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @ConfigurationProperties(prefix = "test-data")
 public record LoadTestDataProperties(
 		boolean enabled,
@@ -28,6 +25,14 @@ public record LoadTestDataProperties(
 			errors.add("[LoadTestDataProperties]: allowed-database: 로드 테스트 데이터베이스를 설정해야 합니다.");
 		}
 		
+		if (startDate == null || endDate == null) {
+			errors.add("[LoadTestDataProperties]: start-date, end-date: 테스트 생성 데이터의 시작일과 종료일을 설정해야 합니다.");
+		}
+		
+		if (startDate.isAfter(endDate)) {
+			errors.add("[LoadTestDataProperties]: start-date: end-date 보다 늦을 수 없습니다.");
+		}
+		
 		if (performanceCount < 1) {
 			errors.add("[LoadTestDataProperties]: performance-count: 공연 수는 1 이상이어야 합니다.");
 		}
@@ -37,7 +42,7 @@ public record LoadTestDataProperties(
 		}
 		
 		if (maxSessionsPerPerformance > 10) {
-			errors.add("[LoadTestDataProperties]: performance-count: 최대 공연 회차는 10 미만이어야 합니다.");
+			errors.add("[LoadTestDataProperties]: max-sessions-per-performance: 최대 공연 회차는 10 이하여야 합니다.");
 		}
 		
 		if (minSessionsPerPerformance < 1) {
@@ -52,11 +57,8 @@ public record LoadTestDataProperties(
 			errors.add("[LoadTestDataProperties]: max-sessions-per-performance: 최대 공연 회차는 최소 공연 회차보다 이상이어야 합니다.");
 		}
 		
-		
-		// Fail-Fast Logger
 		if (!errors.isEmpty()) {
-			String message = "설정 검증 실패:\n" + String.join("\n", errors);
-			log.error(message);
+			String message = "테스트 데이터 설정 검증 실패:\n" + String.join("\n", errors);
 			throw new IllegalArgumentException(message);
 		}
 	}
