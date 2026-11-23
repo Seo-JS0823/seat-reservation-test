@@ -7,7 +7,7 @@ server:
     
 test-data:
   enabled: true
-  reset: false
+  reset: true
   allowed-database: seat_loadtest
   performance-count: 201
   min-sessions-per-performance: 1
