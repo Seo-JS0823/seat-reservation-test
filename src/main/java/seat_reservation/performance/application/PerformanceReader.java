@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import lombok.RequiredArgsConstructor;
+import seat_reservation.performance.application.transfer.PerformanceInfo;
+import seat_reservation.performance.application.transfer.PerformanceSessionInfo;
 import seat_reservation.performance.domain.exception.PerformanceError;
 import seat_reservation.performance.domain.exception.PerformanceException;
 import seat_reservation.performance.domain.model.Performance;
