@@ -14,6 +14,8 @@ public record LoadTestDataProperties(
 		long performanceCount,
 		int minSessionsPerPerformance,
 		int maxSessionsPerPerformance,
+		int minSeatsPerSession,
+		int maxSeatsPerSession,
 		LocalDate startDate,
 		LocalDate endDate
 ) {
@@ -27,9 +29,7 @@ public record LoadTestDataProperties(
 		
 		if (startDate == null || endDate == null) {
 			errors.add("[LoadTestDataProperties]: start-date, end-date: 테스트 생성 데이터의 시작일과 종료일을 설정해야 합니다.");
-		}
-		
-		if (startDate.isAfter(endDate)) {
+		} else if (startDate.isAfter(endDate)) {
 			errors.add("[LoadTestDataProperties]: start-date: end-date 보다 늦을 수 없습니다.");
 		}
 		
@@ -55,6 +55,18 @@ public record LoadTestDataProperties(
 		
 		if (maxSessionsPerPerformance < minSessionsPerPerformance) {
 			errors.add("[LoadTestDataProperties]: max-sessions-per-performance: 최대 공연 회차는 최소 공연 회차보다 이상이어야 합니다.");
+		}
+		
+		if (minSeatsPerSession < 100) {
+			errors.add("[LoadTestDataProperties]: min-seats-per-session: 최소 좌석 수는 100 이상이어야 합니다.");
+		}
+		
+		if (maxSeatsPerSession < minSeatsPerSession) {
+			errors.add("[LoadTestDataProperties]: max-seats-per-session: 최대 좌석 수는 최소 좌석 수 이상이어야 합니다.");
+		}
+		
+		if (maxSeatsPerSession > 10_000) {
+			errors.add("[LoadTestDataProperties]: max-seats-per-session: 최대 좌석 수는 10_000 이하여야 합니다.");
 		}
 		
 		if (!errors.isEmpty()) {

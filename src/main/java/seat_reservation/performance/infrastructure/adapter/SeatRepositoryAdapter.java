@@ -20,11 +20,5 @@ public class SeatRepositoryAdapter implements SeatRepository {
 	public List<SessionSeat> findSeatsBySession(PerformanceSession session) {
 		return sessionSeatRepo.findBySession(session);
 	}
-
-	@Override
-	public SessionSeat save(SessionSeat seat) {
-		return sessionSeatRepo.save(seat);
-	}
-	
 	
 }
