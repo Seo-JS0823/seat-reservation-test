@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/seat_loadtest
+    
+  main:
+    web-application-type: none
+    
+test-data:
+  enabled: false
+  reset: false
+  allowed-database: seat_loadtest
+  performance-count: 201
+  min-sessions-per-performance: 1
+  max-sessions-per-performance: 3
+  start-date: 2026-12-01
+  end-date: 2027-01-31
