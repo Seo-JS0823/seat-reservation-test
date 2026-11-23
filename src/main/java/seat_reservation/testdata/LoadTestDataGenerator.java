@@ -32,10 +32,15 @@ public class LoadTestDataGenerator {
 							SELECT 1
 							FROM seat_reservation.performance_sessions
 					)
+					OR EXISTS (
+							SELECT 1
+							FROM seat_reservation.session_seats
+					)
 	""";
 	
 	private static final String TRUNCATE_SQL = """
 			TRUNCATE TABLE
+					seat_reservation.session_seats,
 					seat_reservation.performance_sessions,
 					seat_reservation.performances
 	""";
@@ -104,6 +109,72 @@ public class LoadTestDataGenerator {
 			FROM numbered_sessions
 	""";
 	
+	private static final String INSERT_SESSION_SEATS_SQL = """
+			WITH sessions_with_seat_count AS (
+					SELECT
+							session_id,
+							CAST(? AS INTEGER)
+									+ CAST(
+											MOD(
+													session_id - 1,
+													CAST(? AS BIGINT)
+											) AS INTEGER
+									) * 10 AS seat_count
+					FROM seat_reservation.performance_sessions
+			),
+			expanded_seats AS (
+					SELECT
+							session.session_id,
+							session.seat_count,
+							seat_series.seat_number
+					FROM sessions_with_seat_count AS session
+					CROSS JOIN LATERAL generate_series(
+							1,
+							session.seat_count
+					) AS seat_series(seat_number)
+			),
+			categorized_seats AS (
+					SELECT
+							session_id,
+							seat_count,
+							seat_number,
+							CASE
+									WHEN seat_number <= seat_count * 10 / 100 THEN 'VIP'
+									WHEN seat_number <= seat_count * 30 / 100 THEN 'ROYAL'
+									WHEN seat_number <= seat_count * 60 / 100 THEN 'SUPERIOR'
+									ELSE 'A_GRADE'
+							END AS grade
+					FROM expanded_seats
+			)
+			INSERT INTO seat_reservation.session_seats (
+					seat_id,
+					session_id,
+					seat_number,
+					grade,
+					price,
+					status,
+					current_hold_id,
+					current_reservation_id
+			)
+			SELECT
+					ROW_NUMBER() OVER (
+							ORDER BY session_id, seat_number
+					) AS seat_id,
+					session_id,
+					seat_number,
+					grade,
+					CASE grade
+							WHEN 'VIP' THEN 200000
+							WHEN 'ROYAL' THEN 150000
+							WHEN 'SUPERIOR' THEN 120000
+							WHEN 'A_GRADE' THEN 100000
+					END AS price,
+					'AVAILABLE' AS status,
+					NULL AS current_hold_id,
+					NULL AS current_reservation_id
+			FROM categorized_seats
+	""";
+	
 	private static final String PERFORMANCE_COUNT_SQL = """
 			SELECT COUNT(*)
 			FROM seat_reservation.performances
@@ -113,6 +184,11 @@ public class LoadTestDataGenerator {
 			SELECT COUNT(*)
 			FROM seat_reservation.performance_sessions
   """;
+	
+	private static final String SEATS_COUNT_SQL = """
+			SELECT COUNT(*)
+			FROM seat_reservation.session_seats
+	""";
 	
 	private final JdbcTemplate jdbcTemplate;
 	
@@ -147,13 +223,23 @@ public class LoadTestDataGenerator {
 				dayCount
 		);
 		
-		// 5. 결과 확인 및 로그 출력
+		// 5. 회차당 좌석 생성
+		int seatCountRange = (properties.maxSeatsPerSession() - properties.minSeatsPerSession()) / 10 + 1;
+		
+		int insertedSeats = jdbcTemplate.update(
+				INSERT_SESSION_SEATS_SQL,
+				properties.minSeatsPerSession(),
+				seatCountRange
+		);
+		
+		// 6. 결과 확인 및 로그 출력
 		verifyResult(properties);
 		
 		log.info(
-				"부하 테스트 데이터 생성 완료: performances={}, sessions={}",
+				"부하 테스트 데이터 생성 완료: performances={}, sessions={}, seats={}",
 				insertedPerformances,
-				insertedSessions
+				insertedSessions,
+				insertedSeats
 		);
 		
 	}
@@ -166,7 +252,7 @@ public class LoadTestDataGenerator {
 		
 		if (!Objects.equals(currentDatabase, allowedDatabase)) {
 			throw new IllegalStateException(
-					"테스트 데이터 생성을 거부했습니다. 허용된 DB=$s, 현재 DB=%s".formatted(allowedDatabase, currentDatabase)
+					"테스트 데이터 생성을 거부했습니다. 허용된 DB=%s, 현재 DB=%s".formatted(allowedDatabase, currentDatabase)
 			);
 		}
 	}
@@ -201,7 +287,14 @@ public class LoadTestDataGenerator {
 				Long.class
 		);
 		
+		long actualSeatCount = jdbcTemplate.queryForObject(
+				SEATS_COUNT_SQL,
+				Long.class
+		);
+		
 		long expectedSessionCount = calculateExpectedSessionCount(properties);
+		
+		long expectedSeatCount = calculateExpectedSeatCount(expectedSessionCount, properties);
 		
 		if (actualPerformanceCount != properties.performanceCount()) {
 			throw new IllegalStateException(
@@ -212,6 +305,12 @@ public class LoadTestDataGenerator {
 		if (actualSessionCount != expectedSessionCount) {
 			throw new IllegalStateException(
 					"회차 생성 건수가 일치하지 않습니다. expected=%d, actual=%d".formatted(expectedSessionCount, actualSessionCount)
+			);
+		}
+		
+		if (actualSeatCount != expectedSeatCount) {
+			throw new IllegalStateException(
+					"좌석 생성 건수가 일치하지 않습니다. expected=%d, actual=%d".formatted(expectedSeatCount, actualSeatCount)
 			);
 		}
 	}
@@ -231,5 +330,22 @@ public class LoadTestDataGenerator {
 		}
 		
 		return expectedSessionCount;
+	}
+	
+	private long calculateExpectedSeatCount(long sessionCount, LoadTestDataProperties properties) {
+		int seatCountRange = (properties.maxSeatsPerSession() - properties.minSeatsPerSession()) / 10 + 1;
+		
+		long fullCycleCount = sessionCount / seatCountRange;
+		int remainingSessionCount = (int) (sessionCount % seatCountRange);
+		
+		long seatsPerFullCycle = ((long) properties.minSeatsPerSession() + properties.maxSeatsPerSession()) * seatCountRange / 2;
+		
+		long expectedSeatCount = fullCycleCount * seatsPerFullCycle;
+		
+		for (int offset = 0; offset < remainingSessionCount; offset++) {
+			expectedSeatCount += properties.minSeatsPerSession() + offset * 10L;
+		}
+		
+		return expectedSeatCount;
 	}
 }

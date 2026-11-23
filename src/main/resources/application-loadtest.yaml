@@ -6,13 +6,13 @@ server:
   port: 8081
     
 test-data:
-  enabled: false                    // true 설정시 테스트 데이터 생성기 동작
-  reset: false                      // true 설정시 이전 테스트 데이터 초기화
-  allowed-database: seat_loadtest   // 부하 테스트용 DB 설정
-  performance-count: 201            // 공연수 설정
-  min-sessions-per-performance: 1   // 공연 하나당 최소 회차수 설정
-  max-sessions-per-performance: 3   // 공연 하나당 최대 회차수 설정
-  min-seats-per-session: 100        // 회차 하나당 최소 좌석수 설정
-  max-seats-per-session: 500        // 회차 하나당 최대 좌석수 설정
-  start-date: 2026-12-01            // 테스트 데이터의 최초 공연 시작일 설정
-  end-date: 2027-01-31              // 테스트 데이터의 마지막 공연 시작일 설정
+  enabled: ${LOAD_TEST_ENABLED}     # true 설정시 테스트 데이터 생성기 동작
+  reset: ${LOAD_TEST_RESET}         # true 설정시 이전 테스트 데이터 초기화
+  allowed-database: ${LOAD_TEST_DB} # 부하 테스트용 DB 설정
+  performance-count: 201            # 공연수 설정
+  min-sessions-per-performance: 1   # 공연 하나당 최소 회차수 설정
+  max-sessions-per-performance: 3   # 공연 하나당 최대 회차수 설정
+  min-seats-per-session: 100        # 회차 하나당 최소 좌석수 설정
+  max-seats-per-session: 500        # 회차 하나당 최대 좌석수 설정
+  start-date: 2026-12-01            # 테스트 데이터의 최초 공연 시작일 설정
+  end-date: 2027-01-31              # 테스트 데이터의 마지막 공연 시작일 설정
