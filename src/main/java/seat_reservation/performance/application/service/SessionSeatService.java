@@ -56,7 +56,7 @@ public class SessionSeatService {
 		}
 		
 		// 3. 좌석 점유 정보 저장
-		SeatHold hold = SeatHold.hold(seat, userId, seatProperties.ttl());
+		SeatHold hold = SeatHold.hold(holdId, seat, userId, seatProperties.ttl());
 		
 		seatRepo.saveHold(hold);
 		

@@ -9,8 +9,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -28,7 +26,6 @@ import seat_reservation.performance.domain.exception.SeatException;
 public class SeatHold {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID holdId;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -51,13 +48,18 @@ public class SeatHold {
 	@Column
 	private LocalDateTime endedAt;
 	
-	public static SeatHold hold(SessionSeat seat, UUID userId, Duration ttl) {
+	/*
+	 * note: SessionSeat.currentHoldId = SeatHold.holdId
+	 * note: ttl -> SeatProperties.ttl()
+	 */
+	public static SeatHold hold(UUID holdId, SessionSeat seat, UUID userId, Duration ttl) {
 		SeatHold hold = new SeatHold();
 		
 		hold.validateTtl(ttl);
 		
 		LocalDateTime now = LocalDateTime.now();
 		
+		hold.holdId = holdId;
 		hold.seat = seat;
 		hold.userId = userId;
 		hold.heldAt = now;
