@@ -2,6 +2,8 @@ package seat_reservation.performance.application.usecase;
 
 import java.util.UUID;
 
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,8 @@ import seat_reservation.performance.domain.exception.SeatException;
 @RequiredArgsConstructor
 public class SeatHoldUsecase {
 
+	private static final String LIVE_HOLD_INDEX = "uk_seat_holds_live_seat";
+	
 	private final SessionSeatService seatService;
 	
 	public SessionSeatHold seatHold(Long seatId, UUID userId) {
@@ -25,7 +29,31 @@ public class SeatHoldUsecase {
 		}
 		// 낙관적 락 충돌 -> SeatException 변환
 		catch (OptimisticLockingFailureException e) {
-			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS);
+			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS, e);
 		}
+		// 부분 유니크 제약 조건 충돌 -> SeatException 변환
+		catch (DataIntegrityViolationException e) {
+			if (isLiveHoldConflict(e)) {
+				throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS, e);
+			}
+			
+			throw e;
+		}
+	}
+
+	private boolean isLiveHoldConflict(DataIntegrityViolationException e) {
+		Throwable cause = e;
+		
+		while (cause != null) {
+			// 현재 단계의 예외 확인
+			if (cause instanceof ConstraintViolationException cve) {
+				return LIVE_HOLD_INDEX.equals(cve.getConstraintName());
+			}
+			
+			// 다음 단계의 예외로 이동
+			cause = cause.getCause();
+		}
+		
+		return false;
 	}
 }

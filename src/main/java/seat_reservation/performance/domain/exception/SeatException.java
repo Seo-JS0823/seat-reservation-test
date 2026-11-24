@@ -8,4 +8,8 @@ public class SeatException extends BusinessException {
 	public SeatException(ErrorCode error) {
 		super(error);
 	}
+	
+	public SeatException(ErrorCode error, Throwable cause) {
+		super(error, cause);
+	}
 }

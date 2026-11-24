@@ -12,4 +12,10 @@ public class BusinessException extends RuntimeException {
 		
 		this.error = error;
 	}
+	
+	public BusinessException(ErrorCode error, Throwable cause) {
+		super(error.getMessage(), cause);
+		
+		this.error = error;
+	}
 }
