@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import seat_reservation.performance.domain.model.PerformanceSession;
+import seat_reservation.performance.domain.model.SeatHold;
 import seat_reservation.performance.domain.model.SessionSeat;
 
 public interface SeatRepository {
@@ -12,4 +13,6 @@ public interface SeatRepository {
 	List<SessionSeat> findSeatsBySession(PerformanceSession session);
 	
 	Optional<SessionSeat> getSessionSeat(Long seatId);
+	
+	SeatHold saveHold(SeatHold hold);
 }

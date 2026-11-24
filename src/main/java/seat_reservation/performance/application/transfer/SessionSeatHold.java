@@ -1,5 +1,6 @@
 package seat_reservation.performance.application.transfer;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import seat_reservation.performance.domain.model.SeatGrade;
@@ -12,7 +13,9 @@ public record SessionSeatHold(
 		SeatGrade grade,
 		Long price,
 		SeatStatus status,
-		UUID currentHeldId
+		UUID currentHeldId,
+		LocalDateTime heldExpiresAt,
+		Long holdId
 ) {
 
 }

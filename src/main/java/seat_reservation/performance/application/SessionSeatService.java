@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import seat_reservation.performance.application.properties.SeatProperties;
 import seat_reservation.performance.application.transfer.SessionSeatHold;
 import seat_reservation.performance.application.transfer.SessionSeatInfo;
 import seat_reservation.performance.domain.exception.PerformanceError;
@@ -14,6 +15,7 @@ import seat_reservation.performance.domain.exception.PerformanceException;
 import seat_reservation.performance.domain.exception.SeatError;
 import seat_reservation.performance.domain.exception.SeatException;
 import seat_reservation.performance.domain.model.PerformanceSession;
+import seat_reservation.performance.domain.model.SeatHold;
 import seat_reservation.performance.domain.model.SessionSeat;
 import seat_reservation.performance.domain.repository.PerformanceRepository;
 import seat_reservation.performance.domain.repository.SeatRepository;
@@ -22,6 +24,8 @@ import seat_reservation.performance.domain.repository.SeatRepository;
 @RequiredArgsConstructor
 public class SessionSeatService {
 
+	private final SeatProperties seatProperties;
+	
 	private final PerformanceRepository performanceRepo;
 	
 	private final SeatRepository seatRepo;
@@ -39,7 +43,7 @@ public class SessionSeatService {
 	}
 	
 	@Transactional
-	public SessionSeatHold seatHold(Long seatId) {
+	public SessionSeatHold seatHold(Long seatId, UUID userId) {
 		// 1. 점유 가능한 좌석 조회
 		SessionSeat seat = seatRepo.getSessionSeat(seatId)
 				.orElseThrow(() -> new SeatException(SeatError.SESSION_SEAT_NOT_FOUND));
@@ -48,13 +52,18 @@ public class SessionSeatService {
 		UUID holdId = UUID.randomUUID();
 		
 		// 2. 점유한 좌석 상태 확인과 동시에 좌석 점유
-		boolean hold = seat.availableOnlySeatHold(holdId);
+		boolean usable = seat.availableOnlySeatHold(holdId);
 		
-		if (!hold) {
+		if (!usable) {
 			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS);
 		}
 		
-		// 4. 임시 점유키와 함께 반환
+		// 4. 좌석 점유 정보 저장
+		SeatHold hold = SeatHold.hold(seat, userId, seatProperties.ttl());
+		
+		seatRepo.saveHold(hold);
+		
+		// . 임시 점유키와 함께 반환
 		return new SessionSeatHold(
 				seat.getSeatId(),
 				seat.getSession().getSessionId(),
@@ -62,7 +71,9 @@ public class SessionSeatService {
 				seat.getGrade(),
 				seat.getPrice(),
 				seat.getStatus(),
-				seat.getCurrentHoldId()
+				seat.getCurrentHoldId(),
+				hold.getExpiresAt(),
+				hold.getHoldId()
 		);
 	}
 }

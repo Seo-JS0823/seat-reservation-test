@@ -59,6 +59,7 @@ public class SeatHold {
 		hold.userId = userId;
 		hold.heldAt = now;
 		hold.expiresAt = now.plus(ttl);
+		hold.status = HoldStatus.ACTIVE;
 		
 		return hold;
 	}
