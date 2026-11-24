@@ -46,4 +46,9 @@ public class PerformanceRepositoryAdapter implements PerformanceRepository {
 		
 		return sessionRepo.findByPerformance(performance);
 	}
+
+	@Override
+	public Optional<Performance> findById(Long performanceId) {
+		return performanceRepo.findById(performanceId);
+	}
 }

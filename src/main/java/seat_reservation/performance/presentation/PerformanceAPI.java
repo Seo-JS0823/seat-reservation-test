@@ -25,7 +25,7 @@ public class PerformanceAPI {
 	private final PerformanceReader performanceReader;
 	
 	// 공연 목록 조회
-	@GetMapping("/search")
+	@GetMapping
 	public Page<PerformanceInfo> searchPerformance(
 			@RequestParam(name = "title", required = false) String title,
 			@PageableDefault(
@@ -37,23 +37,27 @@ public class PerformanceAPI {
 		return performanceReader.searchPerformance(title, pageable);
 	}
 	
-	// 특정 공연의 회차 조회
-	@GetMapping("/{id}")
-	public List<PerformanceSessionInfo> getPerformanceSessions(
-			@PathVariable("id") Long performanceId
+	// 공연 상세 조회
+	@GetMapping("/{performanceId}")
+	public PerformanceInfo getPerformanceInfo(
+			@PathVariable("performanceId") Long performanceId
 	) {
-		List<PerformanceSessionInfo> response = performanceReader.getPerformanceSessions(performanceId);
-		
-		return response;
+		return performanceReader.getPerformance(performanceId); 
+	}
+	
+	// 특정 공연의 회차 조회
+	@GetMapping("/{performanceId}/sessions")
+	public List<PerformanceSessionInfo> getPerformanceSessions(
+			@PathVariable("performanceId") Long performanceId
+	) {
+		return performanceReader.getPerformanceSessions(performanceId);
 	}
 	
 	// 회차 상세 조회
-	@GetMapping("/{id}/sessions")
+	@GetMapping("/sessions/{sessionId}")
 	public PerformanceSessionInfo getDetailPerformanceSession(
 			@PathVariable("id") Long sessionId
 	) {
-		PerformanceSessionInfo response = performanceReader.getPerformanceSession(sessionId);
-		
-		return response;
+		return performanceReader.getPerformanceSession(sessionId);
 	}
 }

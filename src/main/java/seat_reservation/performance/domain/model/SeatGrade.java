@@ -1,19 +1,13 @@
 package seat_reservation.performance.domain.model;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor
 public enum SeatGrade {
-	VIP("VIP석"),
+	VIP,
 	
-	ROYAL("R석"),
+	ROYAL,
 	
-	SUPERIOR("S석"),
+	SUPERIOR,
 	
-	A_GRADE("A석"),
+	A_GRADE,
 	
 	;
-	private final String gradeDisplayName;
 }

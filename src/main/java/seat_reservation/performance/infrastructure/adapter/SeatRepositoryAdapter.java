@@ -1,6 +1,7 @@
 package seat_reservation.performance.infrastructure.adapter;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +20,11 @@ public class SeatRepositoryAdapter implements SeatRepository {
 	@Override
 	public List<SessionSeat> findSeatsBySession(PerformanceSession session) {
 		return sessionSeatRepo.findBySession(session);
+	}
+
+	@Override
+	public Optional<SessionSeat> getSessionSeat(Long seatId) {
+		return sessionSeatRepo.findById(seatId);
 	}
 	
 }

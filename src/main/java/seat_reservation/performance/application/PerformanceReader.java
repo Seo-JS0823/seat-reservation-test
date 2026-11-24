@@ -55,4 +55,14 @@ public class PerformanceReader {
 				.map(p -> new PerformanceSessionInfo(p.getSessionId(), p.getPerformance().getPerformanceId(), p.getStartAt()))
 				.toList();
 	}
+
+	public PerformanceInfo getPerformance(Long performanceId) {
+		Performance performance =  performanceRepo.findById(performanceId)
+				.orElseThrow(() -> new PerformanceException(PerformanceError.PERFORMANCE_SESSION_NOT_FOUND));
+		
+		return new PerformanceInfo(
+				performance.getPerformanceId(),
+				performance.getTitle()
+		);
+	}
 }

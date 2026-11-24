@@ -13,9 +13,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import seat_reservation.global.exception.BusinessException;
+import seat_reservation.global.exception.CommonError;
 
 @Entity
 @Table(name = "session_seats")
@@ -52,4 +55,30 @@ public class SessionSeat {
 	// 현재 확정된 예약 식별자 없으면 비어 있음
 	@Column
 	private UUID currentReservationId;
+	
+	@Version
+	private Long version;
+	
+	public boolean isAvailable() {
+		if (this.status == SeatStatus.AVAILABLE) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean availableOnlySeatHold(UUID holdId) {
+		if (holdId == null) {
+			throw new BusinessException(CommonError.BAD_REQUEST);
+		}
+		
+		if (isAvailable()) {
+			this.status = SeatStatus.HELD;
+			this.currentHoldId = holdId;
+			
+			return true;
+		}
+		
+		return false;
+	}
 }

@@ -11,6 +11,8 @@ import seat_reservation.performance.domain.model.PerformanceSession;
 
 public interface PerformanceRepository {
 
+	Optional<Performance> findById(Long performance);
+	
 	Page<Performance> findByTitle(String title, Pageable pageable);
 	
 	Page<Performance> findAll(Pageable pageable);
