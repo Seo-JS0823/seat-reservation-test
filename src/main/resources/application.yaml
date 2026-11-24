@@ -20,3 +20,7 @@ spring:
       hibernate:
         format_sql: true
         default_schema: seat_reservation
+        
+seat:
+  hold:
+    ttl: 5m
