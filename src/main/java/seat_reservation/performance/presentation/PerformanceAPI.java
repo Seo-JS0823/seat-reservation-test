@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import seat_reservation.performance.application.PerformanceReader;
+import seat_reservation.performance.application.service.PerformanceReader;
 import seat_reservation.performance.application.transfer.PerformanceInfo;
 import seat_reservation.performance.application.transfer.PerformanceSessionInfo;
 

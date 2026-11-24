@@ -1,4 +1,4 @@
-package seat_reservation.performance.application;
+package seat_reservation.performance.application.service;
 
 import java.util.List;
 import java.util.UUID;

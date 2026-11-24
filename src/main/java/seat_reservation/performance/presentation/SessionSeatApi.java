@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import seat_reservation.performance.application.SessionSeatService;
+import seat_reservation.performance.application.service.SessionSeatService;
 import seat_reservation.performance.application.transfer.SessionSeatHold;
 import seat_reservation.performance.application.transfer.SessionSeatInfo;
 import seat_reservation.performance.presentation.request.SeatHoldRequests.SeatHoldRequest;

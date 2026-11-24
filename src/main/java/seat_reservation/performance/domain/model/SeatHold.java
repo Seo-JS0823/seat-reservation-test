@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,8 +28,8 @@ import seat_reservation.performance.domain.exception.SeatException;
 public class SeatHold {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long holdId;
+	@GeneratedValue(strategy = GenerationType.UUID)
+	private UUID holdId;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "seat_id", nullable = false, updatable = false)
@@ -36,7 +38,8 @@ public class SeatHold {
 	@Column(nullable = false, updatable = false)
 	private UUID userId;
 	
-	@Column(nullable = false)
+	@Column(nullable = false, length = 20)
+	@Enumerated(EnumType.STRING)
 	private HoldStatus status;
 	
 	@Column(nullable = false, updatable = false)

@@ -15,7 +15,7 @@ public record SessionSeatHold(
 		SeatStatus status,
 		UUID currentHeldId,
 		LocalDateTime heldExpiresAt,
-		Long holdId
+		UUID holdId
 ) {
 
 }
