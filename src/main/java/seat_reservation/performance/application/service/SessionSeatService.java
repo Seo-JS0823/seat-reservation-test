@@ -43,13 +43,10 @@ public class SessionSeatService {
 	}
 	
 	@Transactional
-	public SessionSeatHold seatHold(Long seatId, UUID userId) {
+	public SessionSeatHold seatHold(Long seatId, UUID userId, UUID holdId) {
 		// 1. 점유 가능한 좌석 조회
 		SessionSeat seat = seatRepo.getSessionSeat(seatId)
 				.orElseThrow(() -> new SeatException(SeatError.SESSION_SEAT_NOT_FOUND));
-		
-		// 3. 임시 점유키 발급
-		UUID holdId = UUID.randomUUID();
 		
 		// 2. 점유한 좌석 상태 확인과 동시에 좌석 점유
 		boolean usable = seat.availableOnlySeatHold(holdId);
@@ -58,12 +55,12 @@ public class SessionSeatService {
 			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS);
 		}
 		
-		// 4. 좌석 점유 정보 저장
+		// 3. 좌석 점유 정보 저장
 		SeatHold hold = SeatHold.hold(seat, userId, seatProperties.ttl());
 		
 		seatRepo.saveHold(hold);
 		
-		// . 임시 점유키와 함께 반환
+		// 4. 임시 점유키와 함께 반환
 		return new SessionSeatHold(
 				seat.getSeatId(),
 				seat.getSession().getSessionId(),

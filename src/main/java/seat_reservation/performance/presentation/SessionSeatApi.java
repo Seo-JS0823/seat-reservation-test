@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import seat_reservation.performance.application.service.SessionSeatService;
 import seat_reservation.performance.application.transfer.SessionSeatHold;
 import seat_reservation.performance.application.transfer.SessionSeatInfo;
+import seat_reservation.performance.application.usecase.SeatHoldUsecase;
 import seat_reservation.performance.presentation.request.SeatHoldRequests.SeatHoldRequest;
 
 @RestController
@@ -21,6 +22,8 @@ import seat_reservation.performance.presentation.request.SeatHoldRequests.SeatHo
 public class SessionSeatApi {
 
 	private final SessionSeatService sessionSeatService;
+	
+	private final SeatHoldUsecase seatHoldUsecase;
 	
 	// 회차별 좌석 목록 조회
 	@GetMapping("/{sessionId}")
@@ -36,6 +39,6 @@ public class SessionSeatApi {
 			@PathVariable("seatId") Long seatId,
 			@RequestBody SeatHoldRequest request
 	) {
-		return sessionSeatService.seatHold(seatId, request.userId());
+		return seatHoldUsecase.seatHold(seatId, request.userId());
 	}
 }
