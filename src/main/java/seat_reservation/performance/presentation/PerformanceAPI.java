@@ -56,7 +56,7 @@ public class PerformanceAPI {
 	// 회차 상세 조회
 	@GetMapping("/sessions/{sessionId}")
 	public PerformanceSessionInfo getDetailPerformanceSession(
-			@PathVariable("id") Long sessionId
+			@PathVariable("sessionId") Long sessionId
 	) {
 		return performanceReader.getPerformanceSession(sessionId);
 	}

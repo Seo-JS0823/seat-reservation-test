@@ -25,5 +25,5 @@ test-data:
 seat:
   hold:
     ttl: 1m
-    expiration-interval: 6s
+    expiration-interval: 1s
     expiration-batch-size: 100
