@@ -24,3 +24,5 @@ spring:
 seat:
   hold:
     ttl: 5m
+    expiration-interval: 30s
+    expiration-batch-size: 100

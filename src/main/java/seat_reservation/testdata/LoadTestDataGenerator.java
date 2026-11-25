@@ -40,6 +40,7 @@ public class LoadTestDataGenerator {
 	
 	private static final String TRUNCATE_SQL = """
 			TRUNCATE TABLE
+					seat_reservation.seat_holds,
 					seat_reservation.session_seats,
 					seat_reservation.performance_sessions,
 					seat_reservation.performances
