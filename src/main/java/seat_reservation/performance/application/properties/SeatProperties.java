@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record SeatProperties(
 		Duration ttl,
 		Duration expirationInterval,
-		int expirationBatchSize
+		Integer expirationBatchSize
 ) {
 
 	private static final String ERROR_PERFIX_FORMATTED = "[SeatProperties]: seat.hold.%s: %s";
@@ -32,7 +32,7 @@ public record SeatProperties(
 			));
 		}
 		
-		if (expirationBatchSize <= 0) {
+		if (expirationBatchSize == null || expirationBatchSize <= 0) {
 			errors.add(ERROR_PERFIX_FORMATTED.formatted(
 					"expiration-batch-size",
 					"점유 만료 스케줄링 처리 사이즈는 1 이상이어야 합니다."

@@ -123,4 +123,31 @@ public class SessionSeatService {
 		currentHold.cancel(now);
 		seat.release(holdId);
 	}
+	
+	@Transactional(readOnly = true)
+	public List<UUID> findExpiredHoldsIds(LocalDateTime now, int batchSize) {
+		return seatRepo.findExpiredHoldsIds(now, batchSize);
+	}
+	
+	@Transactional
+	public boolean expireSeatHold(UUID holdId, LocalDateTime now) {
+		// 1. 좌석 점유 정보 조회
+		SeatHold hold = seatRepo.findExpiredHold(holdId)
+				.orElse(null);
+		
+		if (hold == null) {
+			return false;
+		}
+		
+		if (!hold.isExpired(now)) {
+			return false;
+		}
+		
+		SessionSeat seat = hold.getSeat();
+		
+		hold.expire(now);
+		seat.release(holdId);
+		
+		return true;
+	}
 }

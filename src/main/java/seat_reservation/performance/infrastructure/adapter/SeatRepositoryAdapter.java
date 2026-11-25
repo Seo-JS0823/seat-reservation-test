@@ -1,9 +1,11 @@
 package seat_reservation.performance.infrastructure.adapter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +54,16 @@ public class SeatRepositoryAdapter implements SeatRepository {
 	@Override
 	public Optional<SeatHold> findHoldingSeat(SessionSeat seat) {
 		return holdRepo.findBySeatAndStatus(seat, HoldStatus.ACTIVE);
+	}
+
+	@Override
+	public List<UUID> findExpiredHoldsIds(LocalDateTime now, int batchSize) {
+		return holdRepo.findExpiredHoldsIds(HoldStatus.ACTIVE, now, Limit.of(batchSize));
+	}
+
+	@Override
+	public Optional<SeatHold> findExpiredHold(UUID holdId) {
+		return holdRepo.findByIdAndStatusWithSeat(holdId, HoldStatus.ACTIVE);
 	}
 	
 }

@@ -1,5 +1,6 @@
 package seat_reservation.performance.domain.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,4 +25,10 @@ public interface SeatRepository {
 	
 	// 좌석의 현재 점유중인 점유 정보 조회
 	Optional<SeatHold> findHoldingSeat(SessionSeat seat);
+	
+	// 만료된 좌석 정보 IDS 조회
+	List<UUID> findExpiredHoldsIds(LocalDateTime now, int batchSize);
+	
+	// 만료된 좌석 정보 조회
+	Optional<SeatHold> findExpiredHold(UUID holdId);
 }
