@@ -2,6 +2,7 @@ package seat_reservation.performance.domain.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import seat_reservation.performance.domain.model.PerformanceSession;
 import seat_reservation.performance.domain.model.SeatHold;
@@ -15,4 +16,6 @@ public interface SeatRepository {
 	Optional<SessionSeat> getSessionSeat(Long seatId);
 	
 	SeatHold saveHold(SeatHold hold);
+	
+	Optional<SeatHold> findHoldingSeatByHoldId(UUID holdId, UUID userId);
 }

@@ -17,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import seat_reservation.global.exception.CommonError;
+import seat_reservation.performance.domain.exception.SeatError;
 import seat_reservation.performance.domain.exception.SeatException;
 
 @Entity
@@ -67,6 +68,27 @@ public class SeatHold {
 		hold.status = HoldStatus.ACTIVE;
 		
 		return hold;
+	}
+	
+	// 좌석 점유 취소
+	public void release(LocalDateTime now) {
+		if (this.status != HoldStatus.ACTIVE) {
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
+		}
+		
+		if (now == null) {
+			throw new SeatException(CommonError.INTERNAL_SERVER_ERROR);
+		}
+		
+		// 사용자 요청 시점과 서버 수신 시점 사이에 만료 시간이 지날 수 있으므로
+		// 만료 시간이 지난 경우 EXPIRED
+		// 만료 시간이 지나지 않은 경우 RELEASED
+		HoldStatus nextStatus = !now.isBefore(this.expiresAt)
+				? HoldStatus.EXPIRED
+				: HoldStatus.RELEASED;
+		
+		this.status = nextStatus;
+		this.endedAt = now;
 	}
 	
 	private void validateTtl(Duration ttl) {

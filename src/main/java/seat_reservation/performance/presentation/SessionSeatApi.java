@@ -1,7 +1,10 @@
 package seat_reservation.performance.presentation;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +17,7 @@ import seat_reservation.performance.application.service.SessionSeatService;
 import seat_reservation.performance.application.transfer.SessionSeatHold;
 import seat_reservation.performance.application.transfer.SessionSeatInfo;
 import seat_reservation.performance.application.usecase.SeatHoldUsecase;
+import seat_reservation.performance.presentation.request.SeatHoldRequests.SeatCancelRequest;
 import seat_reservation.performance.presentation.request.SeatHoldRequests.SeatHoldRequest;
 
 @RestController
@@ -40,5 +44,14 @@ public class SessionSeatApi {
 			@RequestBody SeatHoldRequest request
 	) {
 		return seatHoldUsecase.seatHold(seatId, request.userId());
+	}
+	
+	@DeleteMapping("/{seatId}/holds/{holdId}")
+	public void cancelSeatHold(
+			@PathVariable("seatId") Long seatId,
+			@PathVariable("holdId") UUID holdId,
+			@RequestBody SeatCancelRequest request
+	) {
+		seatHoldUsecase.cancelSeatHold(seatId, holdId, holdId);
 	}
 }

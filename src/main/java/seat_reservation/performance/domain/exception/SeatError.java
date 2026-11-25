@@ -17,7 +17,17 @@ public enum SeatError implements ErrorCode {
 	
 	SEAT_HOLD_NOT_STATUS(
 			HttpStatus.CONFLICT,
-			"좌석을 임시 점유가능한 상태가 아닙니다."
+			"좌석을 임시 점유 가능한 상태가 아닙니다."
+	),
+	
+	SEAT_HOLDING_NOT_FOUND(
+			HttpStatus.CONFLICT,
+			"유효한 좌석 점유 내역을 찾을 수 없습니다."
+	),
+	
+	SEAT_HOLD_INVALID_STATE(
+			HttpStatus.CONFLICT,
+			"이미 처리되었거나 유효하지 않은 좌석 점유 상태입니다."
 	),
 	
 	;

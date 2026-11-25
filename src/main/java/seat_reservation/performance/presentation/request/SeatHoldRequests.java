@@ -7,4 +7,8 @@ public class SeatHoldRequests {
 	public record SeatHoldRequest(UUID userId) {
 		
 	}
+	
+	public record SeatCancelRequest(UUID userId) {
+		
+	}
 }

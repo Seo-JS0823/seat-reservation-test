@@ -1,5 +1,6 @@
 package seat_reservation.performance.application.usecase;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.exception.ConstraintViolationException;
@@ -41,6 +42,16 @@ public class SeatHoldUsecase {
 		}
 	}
 
+	public void cancelSeatHold(Long seatId, UUID userId, UUID holdId) {
+		LocalDateTime now = LocalDateTime.now();
+		
+		try {
+			seatService.seatCancel(seatId, userId, holdId, now);
+		} catch (OptimisticLockingFailureException e) {
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
+		}
+	}
+	
 	private boolean isLiveHoldConflict(DataIntegrityViolationException e) {
 		Throwable cause = e;
 		

@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import seat_reservation.global.exception.BusinessException;
 import seat_reservation.global.exception.CommonError;
+import seat_reservation.performance.domain.exception.SeatError;
+import seat_reservation.performance.domain.exception.SeatException;
 
 @Entity
 @Table(name = "session_seats")
@@ -80,5 +82,18 @@ public class SessionSeat {
 		}
 		
 		return false;
+	}
+	
+	public void release(UUID holdId) {
+		if (holdId == null || this.currentHoldId == null) {
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
+		}
+		
+		if (!holdId.equals(this.currentHoldId) || this.status != SeatStatus.HELD) {
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
+		}
+		
+		this.status = SeatStatus.AVAILABLE;
+		this.currentHoldId = null;
 	}
 }
