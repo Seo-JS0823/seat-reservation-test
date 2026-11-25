@@ -10,6 +10,8 @@ import seat_reservation.performance.domain.model.SessionSeat;
 
 public interface SeatRepository {
 	
+	void flush();
+	
 	// 특정 회차의 좌석 목록 조회
 	List<SessionSeat> findSeatsBySession(PerformanceSession session);
 	
@@ -17,5 +19,9 @@ public interface SeatRepository {
 	
 	SeatHold saveHold(SeatHold hold);
 	
-	Optional<SeatHold> findHoldingSeatByHoldId(UUID holdId, UUID userId);
+	// 자신의 현재 점유중인 점유 정보 조회
+	Optional<SeatHold> findMeHoldingSeat(UUID holdId, UUID userId);
+	
+	// 좌석의 현재 점유중인 점유 정보 조회
+	Optional<SeatHold> findHoldingSeat(SessionSeat seat);
 }

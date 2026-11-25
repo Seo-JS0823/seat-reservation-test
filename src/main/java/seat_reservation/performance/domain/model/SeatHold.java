@@ -53,12 +53,10 @@ public class SeatHold {
 	 * note: SessionSeat.currentHoldId = SeatHold.holdId
 	 * note: ttl -> SeatProperties.ttl()
 	 */
-	public static SeatHold hold(UUID holdId, SessionSeat seat, UUID userId, Duration ttl) {
+	public static SeatHold hold(UUID holdId, SessionSeat seat, UUID userId, LocalDateTime now, Duration ttl) {
 		SeatHold hold = new SeatHold();
 		
 		hold.validateTtl(ttl);
-		
-		LocalDateTime now = LocalDateTime.now();
 		
 		hold.holdId = holdId;
 		hold.seat = seat;
@@ -70,25 +68,43 @@ public class SeatHold {
 		return hold;
 	}
 	
+	public boolean isExpired(LocalDateTime now) {
+		return !now.isBefore(this.expiresAt);
+	}
+	
 	// 좌석 점유 취소
-	public void release(LocalDateTime now) {
-		if (this.status != HoldStatus.ACTIVE) {
-			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
-		}
-		
+	public void cancel(LocalDateTime now) {
 		if (now == null) {
 			throw new SeatException(CommonError.INTERNAL_SERVER_ERROR);
+		}
+		
+		if (this.status != HoldStatus.ACTIVE) {
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
 		}
 		
 		// 사용자 요청 시점과 서버 수신 시점 사이에 만료 시간이 지날 수 있으므로
 		// 만료 시간이 지난 경우 EXPIRED
 		// 만료 시간이 지나지 않은 경우 RELEASED
-		HoldStatus nextStatus = !now.isBefore(this.expiresAt)
-				? HoldStatus.EXPIRED
-				: HoldStatus.RELEASED;
+		if (isExpired(now)) {
+			expire(now);
+			return;
+		}
 		
-		this.status = nextStatus;
+		this.status = HoldStatus.RELEASED;
 		this.endedAt = now;
+	}
+	
+	public void expire(LocalDateTime now) {
+		if (now == null) {
+			throw new SeatException(CommonError.INTERNAL_SERVER_ERROR);
+		}
+		
+		if (this.status != HoldStatus.ACTIVE || !isExpired(now)) {
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
+		}
+		
+		this.status = HoldStatus.EXPIRED;
+		this.endedAt = this.expiresAt;
 	}
 	
 	private void validateTtl(Duration ttl) {

@@ -13,4 +13,22 @@ public enum SeatStatus {
 	
 	// 결제가 성공하여 예약이 확정된 상태
 	RESERVED
+	
+	;
+	
+	public boolean isAvailable() {
+		return this == SeatStatus.AVAILABLE;
+	}
+	
+	public boolean isHeld() {
+		return this == SeatStatus.HELD;
+	}
+	
+	public boolean isPaymentPending() {
+		return this == SeatStatus.PAYMENT_PENDING;
+	}
+	
+	public boolean isReserved() {
+		return this == SeatStatus.RESERVED;
+	}
 }

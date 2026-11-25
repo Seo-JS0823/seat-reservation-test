@@ -45,24 +45,43 @@ public class SessionSeatService {
 	}
 	
 	@Transactional
-	public SessionSeatHold seatHold(Long seatId, UUID userId, UUID holdId) {
+	public SessionSeatHold seatHold(Long seatId, UUID userId, UUID holdId, LocalDateTime now) {
 		// 1. 점유 가능한 좌석 조회
 		SessionSeat seat = seatRepo.getSessionSeat(seatId)
 				.orElseThrow(() -> new SeatException(SeatError.SESSION_SEAT_NOT_FOUND));
 		
-		// 2. 점유한 좌석 상태 확인과 동시에 좌석 점유
-		boolean usable = seat.availableOnlySeatHold(holdId);
+		// 2. 점유 가능한 좌석의 상태 확인 및 분기
+		boolean usable = false;
 		
-		if (!usable) {
-			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS);
+		switch (seat.getStatus()) {
+			case AVAILABLE -> usable = seat.availableOnlySeatHold(holdId);
+			
+			case HELD -> {
+				SeatHold holding = seatRepo.findHoldingSeat(seat)
+						.orElseThrow(() -> new SeatException(SeatError.SEAT_HOLD_NOT_STATUS));
+				
+				if (holding.isExpired(now)) {
+					holding.expire(now);
+					
+					seatRepo.flush();
+					
+					seat.replaceExpiredHold(holding.getHoldId(), holdId);
+					
+					usable = true;
+				}
+			}
+			
+			default -> throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS);
 		}
 		
+		if (!usable)
+			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS);
+		
 		// 3. 좌석 점유 정보 저장
-		SeatHold hold = SeatHold.hold(holdId, seat, userId, seatProperties.ttl());
+		SeatHold hold = SeatHold.hold(holdId, seat, userId, now, seatProperties.ttl());
 		
 		seatRepo.saveHold(hold);
 		
-		// 4. 임시 점유키와 함께 반환
 		return new SessionSeatHold(
 				seat.getSeatId(),
 				seat.getSession().getSessionId(),
@@ -79,7 +98,7 @@ public class SessionSeatService {
 	@Transactional
 	public void seatCancel(Long seatId, UUID userId, UUID holdId, LocalDateTime now) {
 		// 1. 좌석 점유 정보 조회 + SessionSeat Join
-		SeatHold currentHold = seatRepo.findHoldingSeatByHoldId(holdId, userId)
+		SeatHold currentHold = seatRepo.findMeHoldingSeat(holdId, userId)
 				.orElseThrow(() -> new SeatException(SeatError.SEAT_HOLDING_NOT_FOUND));
 		
 		// 2. 조회한 점유 정보가 요청 경로의 좌석 및 현재 점유 정보와 일치하는지 확인
@@ -101,7 +120,7 @@ public class SessionSeatService {
 		}
 		
 		// 3. 좌석 점유를 취소
-		currentHold.release(now);
+		currentHold.cancel(now);
 		seat.release(holdId);
 	}
 }

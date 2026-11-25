@@ -24,9 +24,10 @@ public class SeatHoldUsecase {
 	
 	public SessionSeatHold seatHold(Long seatId, UUID userId) {
 		UUID holdId = UUID.randomUUID();
+		LocalDateTime now = LocalDateTime.now();
 		
 		try {
-			return seatService.seatHold(seatId, userId, holdId);
+			return seatService.seatHold(seatId, userId, holdId, now);
 		}
 		// 낙관적 락 충돌 -> SeatException 변환
 		catch (OptimisticLockingFailureException e) {

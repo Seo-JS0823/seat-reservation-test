@@ -24,6 +24,11 @@ public class SeatRepositoryAdapter implements SeatRepository {
 	private final SeatHoldRepository holdRepo;
 
 	@Override
+	public void flush() {
+		holdRepo.flush();
+	}
+	
+	@Override
 	public List<SessionSeat> findSeatsBySession(PerformanceSession session) {
 		return sessionSeatRepo.findBySession(session);
 	}
@@ -39,9 +44,14 @@ public class SeatRepositoryAdapter implements SeatRepository {
 	}
 
 	@Override
-	public Optional<SeatHold> findHoldingSeatByHoldId(UUID holdId, UUID userId) {
+	public Optional<SeatHold> findMeHoldingSeat(UUID holdId, UUID userId) {
 		// 현재 점유중인 정보를 조회하므로 status 조건 추가
 		return holdRepo.findByIdAndUserIdAndStatus(holdId, userId, HoldStatus.ACTIVE);
+	}
+
+	@Override
+	public Optional<SeatHold> findHoldingSeat(SessionSeat seat) {
+		return holdRepo.findBySeatAndStatus(seat, HoldStatus.ACTIVE);
 	}
 	
 }

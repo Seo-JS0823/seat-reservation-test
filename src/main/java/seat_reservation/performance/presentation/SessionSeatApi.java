@@ -1,6 +1,5 @@
 package seat_reservation.performance.presentation;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,12 +45,13 @@ public class SessionSeatApi {
 		return seatHoldUsecase.seatHold(seatId, request.userId());
 	}
 	
+	// 좌석 점유 취소
 	@DeleteMapping("/{seatId}/holds/{holdId}")
 	public void cancelSeatHold(
 			@PathVariable("seatId") Long seatId,
 			@PathVariable("holdId") UUID holdId,
 			@RequestBody SeatCancelRequest request
 	) {
-		seatHoldUsecase.cancelSeatHold(seatId, holdId, holdId);
+		seatHoldUsecase.cancelSeatHold(seatId, request.userId(), holdId);
 	}
 }

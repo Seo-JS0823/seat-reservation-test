@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import seat_reservation.performance.domain.model.HoldStatus;
 import seat_reservation.performance.domain.model.SeatHold;
+import seat_reservation.performance.domain.model.SessionSeat;
 
 public interface SeatHoldRepository extends JpaRepository<SeatHold, UUID> {
 
@@ -27,5 +28,7 @@ public interface SeatHoldRepository extends JpaRepository<SeatHold, UUID> {
 			@Param("userId") UUID userId,
 			@Param("status") HoldStatus status
 	);
+
+	Optional<SeatHold> findBySeatAndStatus(SessionSeat seat, HoldStatus active);
 
 }

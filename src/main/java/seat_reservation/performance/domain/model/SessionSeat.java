@@ -62,13 +62,14 @@ public class SessionSeat {
 	private Long version;
 	
 	public boolean isAvailable() {
-		if (this.status == SeatStatus.AVAILABLE) {
-			return true;
-		}
-		
-		return false;
+		return this.status.isAvailable();
 	}
 	
+	public boolean isHeld() {
+		return this.status.isHeld();
+	}
+	
+	// AVAILABLE 상태에서의 점유 처리
 	public boolean availableOnlySeatHold(UUID holdId) {
 		if (holdId == null) {
 			throw new BusinessException(CommonError.BAD_REQUEST);
@@ -84,6 +85,19 @@ public class SessionSeat {
 		return false;
 	}
 	
+	// 만료된 기존 점유를 새로운 점유 식별자로 교체
+	public void replaceExpiredHold(UUID expiredHoldId, UUID newHoldId) {
+		if (expiredHoldId == null || newHoldId == null) {
+			throw new BusinessException(CommonError.BAD_REQUEST);
+		}
+		
+		if (!isHeld() || !expiredHoldId.equals(this.currentHoldId)) {
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
+		}
+		
+		this.currentHoldId = newHoldId;
+	}
+	
 	public void release(UUID holdId) {
 		if (holdId == null || this.currentHoldId == null) {
 			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
@@ -96,4 +110,5 @@ public class SessionSeat {
 		this.status = SeatStatus.AVAILABLE;
 		this.currentHoldId = null;
 	}
+	
 }
