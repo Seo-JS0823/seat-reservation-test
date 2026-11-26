@@ -27,3 +27,8 @@ seat:
     ttl: 1m
     expiration-interval: 1s
     expiration-batch-size: 100
+    
+logging:
+  level:
+    seat_reservation.global.exception: debug
+    seat_reservation.performance.application.scheduler: debug  

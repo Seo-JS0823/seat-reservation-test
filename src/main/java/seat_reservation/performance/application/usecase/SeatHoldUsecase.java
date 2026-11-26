@@ -73,7 +73,7 @@ public class SeatHoldUsecase {
 					holdId
 			);
 			
-			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE);
+			throw new SeatException(SeatError.SEAT_HOLD_INVALID_STATE, e);
 		}
 	}
 	
