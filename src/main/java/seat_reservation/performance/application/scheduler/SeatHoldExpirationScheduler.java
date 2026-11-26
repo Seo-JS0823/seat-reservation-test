@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import seat_reservation.performance.application.logger.LoggerMessages;
 import seat_reservation.performance.application.properties.SeatProperties;
 import seat_reservation.performance.application.service.SessionSeatService;
 
@@ -27,10 +28,11 @@ public class SeatHoldExpirationScheduler {
 		// 1. 만료 처리할 점유 정보 조회
 		List<UUID> expiredHolds = seatService.findExpiredHoldsIds(now, seatProperties.expirationBatchSize());
 		
-		log.info("[ExpireScheduling] 스케줄러 동작 확인: expiredHoldsSize={}", expiredHolds.size());
-		if (expiredHolds.isEmpty()) {
-			
-			return;
+		if (!expiredHolds.isEmpty()) {
+			log.info(
+					"[ExpireScheduling]: expiredHoldsSize={}",
+					expiredHolds.size()
+			);
 		}
 		
 		// 2. 한 트랜잭션에서 하나의 좌석을 만료 처리
@@ -43,15 +45,27 @@ public class SeatHoldExpirationScheduler {
 				}
 			}
 			catch (OptimisticLockingFailureException e) {
-				log.debug("좌석 점유 만료 중 동시성 충돌이 발생했습니다. holdId={}", holdId);
+				log.debug(
+						"[ExpireScheduling]: type={} holdId={}",
+						LoggerMessages.OPTIMISTIC_LOCK,
+						holdId
+				);
 			}
 			catch (RuntimeException e) {
-				log.error("좌석 점유 만료 처리에 실패했습니다. holdId={}", holdId, e);
+				log.error(
+						"[ExpireScheduling]: type={} holdId={}",
+						LoggerMessages.UNIQUE,
+						holdId,
+						e
+				);
 			}
 		}
 		
 		if (expiredCount > 0) {
-			log.info("만료된 좌석 점유를 정리했습니다. expiredCount={}", expiredCount);
+			log.info(
+					"[ExpireScheduling]: 만료된 좌석 점유를 정리했습니다. expiredCount={}",
+					expiredCount
+			);
 		}	
 	}
 }

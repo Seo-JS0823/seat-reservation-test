@@ -26,3 +26,7 @@ seat:
     ttl: 5m
     expiration-interval: 30s
     expiration-batch-size: 100
+    
+logging:
+  level:
+    seat_reservation.performance.application: debug
