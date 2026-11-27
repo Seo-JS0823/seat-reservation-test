@@ -1,5 +1,6 @@
 package seat_reservation.performance.application.scheduler;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +23,10 @@ public class SeatHoldExpirationScheduler {
 	
 	private final SeatProperties seatProperties;
 	
+	private final Clock clock;
+	
 	public void expireScheduling() {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = LocalDateTime.now(clock);
 		
 		// 1. 만료 처리할 점유 정보 조회
 		List<UUID> expiredHolds = seatService.findExpiredHoldsIds(now, seatProperties.expirationBatchSize());

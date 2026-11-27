@@ -1,5 +1,6 @@
 package seat_reservation.performance.application.usecase;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -25,9 +26,11 @@ public class SeatHoldUsecase {
 	
 	private final SessionSeatService seatService;
 	
+	private final Clock clock;
+	
 	public SessionSeatHold seatHold(Long seatId, UUID userId) {
 		UUID holdId = UUID.randomUUID();
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = LocalDateTime.now(clock);
 		
 		try {
 			return seatService.seatHold(seatId, userId, holdId, now);
@@ -61,7 +64,7 @@ public class SeatHoldUsecase {
 	}
 
 	public void cancelSeatHold(Long seatId, UUID userId, UUID holdId) {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = LocalDateTime.now(clock);
 		
 		try {
 			seatService.seatCancel(seatId, userId, holdId, now);

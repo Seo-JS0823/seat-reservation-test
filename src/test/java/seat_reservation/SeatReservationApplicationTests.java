@@ -1,13 +1,10 @@
 package seat_reservation;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
-import seat_reservation.config.SeatReservationTestcontainersConfig;
+import seat_reservation.config.IntegrationTest;
 
-@SpringBootTest
-@Import(SeatReservationTestcontainersConfig.class)
+@IntegrationTest
 class SeatReservationApplicationTests {
 
 	@Test
