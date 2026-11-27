@@ -18,6 +18,10 @@ import seat_reservation.config.TestClock;
 import seat_reservation.performance.application.properties.SeatProperties;
 import seat_reservation.performance.application.scheduler.SeatHoldSchedulingConfig;
 import seat_reservation.performance.application.service.SessionSeatService;
+import seat_reservation.performance.application.transfer.SessionSeatHold;
+import seat_reservation.performance.application.usecase.SeatHoldUsecase;
+import seat_reservation.performance.domain.model.HoldStatus;
+import seat_reservation.performance.domain.model.SeatStatus;
 import seat_reservation.support.SeatTestData;
 import seat_reservation.support.SeatTestData.HoldRow;
 import seat_reservation.support.SeatTestData.SeatRow;
@@ -32,6 +36,9 @@ public class SeatHoldConcurrencyTest {
 	private SessionSeatService seatService;
 	
 	@Autowired
+	private SeatHoldUsecase seatHoldUsecase;
+	
+	@Autowired
 	private SeatProperties seatProperties;
 	
 	@Autowired
@@ -43,12 +50,21 @@ public class SeatHoldConcurrencyTest {
 	private final UUID userA = UUID.randomUUID();
 	private final UUID holdA = UUID.randomUUID();
 	
+	private final UUID userB = UUID.randomUUID();
+	
 	private long seatId;
+	
+	private LocalDateTime assertEndedAt;
+	
+	private LocalDateTime assertExpiresAt;
 	
 	@BeforeEach
 	void setUp() {
 		// 해당 테스트만 사용하는 좌석 할당
 		seatId = testData.createAvailableSeat();
+		
+		assertEndedAt = TestClock.NOW.minusMinutes(1);
+		assertExpiresAt = TestClock.NOW.plus(seatProperties.ttl());
 		
 		/*
 		 * 첫 번째 흐름
@@ -85,9 +101,66 @@ public class SeatHoldConcurrencyTest {
 		// 점유 검사
 		HoldRow hold = testData.findHold(holdA);
 		assertThat(hold.status()).isEqualTo("ACTIVE");
-		assertThat(hold.expiresAt()).isEqualTo(TestClock.NOW.minusMinutes(1));
+		assertThat(hold.expiresAt()).isEqualTo(assertEndedAt);
 		assertThat(hold.endedAt()).isNull();
 	}
 	
+	@Test
+	@DisplayName("[혼자] 재점유: A는 EXPIRED, B가 새로 점유하고 좌석은 B를 가리킨다")
+	void rehold_alone() {
+		SessionSeatHold result = seatHoldUsecase.seatHold(seatId, userB);
+		UUID holdB = result.holdId();
+		
+		SeatRow seat = testData.findSeat(seatId);
+		assertThat(seat.status()).isEqualTo(SeatStatus.HELD.name());
+		assertThat(seat.currentHoldId()).isEqualTo(holdB);
+		assertThat(seat.version()).isEqualTo(2L);
+		
+		HoldRow a = testData.findHold(holdA);
+		assertThat(a.status()).isEqualTo(HoldStatus.EXPIRED.name());
+		assertThat(a.endedAt()).isEqualTo(assertEndedAt);
+		
+		HoldRow b = testData.findHold(holdB);
+		assertThat(b.status()).isEqualTo(HoldStatus.ACTIVE.name());
+		assertThat(b.expiresAt()).isEqualTo(assertExpiresAt);
+		assertThat(b.endedAt()).isNull();
+		
+		assertThat(testData.countLiveHolds(seatId)).isOne();
+	}
 	
+	@Test
+	@DisplayName("[혼자] 취소: 이미 만료된 점유라 RELEASED가 아니라 EXPIRED로 끝나고 좌석은 빈다")
+	void cancel_alone() {
+		seatHoldUsecase.cancelSeatHold(seatId, userA, holdA);
+		
+		SeatRow seat = testData.findSeat(seatId);
+		assertThat(seat.status()).isEqualTo(SeatStatus.AVAILABLE.name());
+		assertThat(seat.currentHoldId()).isNull();
+		assertThat(seat.version()).isEqualTo(2L);
+		
+		HoldRow a = testData.findHold(holdA);
+		assertThat(a.status()).isEqualTo(HoldStatus.EXPIRED.name());
+		assertThat(a.endedAt()).isEqualTo(assertEndedAt);
+		
+		assertThat(testData.countLiveHolds(seatId)).isZero();
+	}
+	
+	@Test
+	@DisplayName("[혼자] 만료 처리: A는 EXPIRED, 좌석은 빈다")
+	void expire_alone() {
+		boolean expired = seatService.expireSeatHold(holdA, LocalDateTime.now(clock));
+		
+		assertThat(expired).isTrue();
+		
+		SeatRow seat = testData.findSeat(seatId);
+		assertThat(seat.status()).isEqualTo(SeatStatus.AVAILABLE.name());
+		assertThat(seat.currentHoldId()).isNull();
+		assertThat(seat.version()).isEqualTo(2L);
+		
+		HoldRow a = testData.findHold(holdA);
+		assertThat(a.status()).isEqualTo(HoldStatus.EXPIRED.name());
+		assertThat(a.endedAt()).isEqualTo(assertEndedAt);
+		
+		assertThat(testData.countLiveHolds(seatId)).isZero();
+	}
 }

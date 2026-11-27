@@ -48,6 +48,18 @@ public class SeatTestData {
 		return id;
 	}
 	
+	// 좌석의 살아 있는 점유 수 조회
+	public long countLiveHolds(long seatId) {
+		return jdbc.queryForObject(
+				"""
+				SELECT count(*)
+				FROM seat_reservation.seat_holds
+				WHERE seat_id = ?
+					AND status IN ('ACTIVE', 'PAYMENT_PENDING')
+				""", Long.class, seatId
+		);
+	}
+	
 	public void deleteSeat(long seatId) {
 		jdbc.update(
 				"""
