@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
@@ -57,7 +56,6 @@ public class SeatHoldConcurrencyTest {
 		 * userA -> ttl + 1분 전에 점유 = 1분 전에 만료된 좌석
 		 */
 		LocalDateTime heldAt = TestClock.NOW
-				.truncatedTo(ChronoUnit.SECONDS)
 				.minus(seatProperties.ttl())
 				.minusMinutes(1);
 		
