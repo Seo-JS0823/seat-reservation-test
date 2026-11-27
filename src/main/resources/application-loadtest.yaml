@@ -31,4 +31,4 @@ seat:
 logging:
   level:
     seat_reservation.global.exception: debug
-    seat_reservation.performance.application.scheduler: debug  
+    seat_reservation.performance.application: debug  
