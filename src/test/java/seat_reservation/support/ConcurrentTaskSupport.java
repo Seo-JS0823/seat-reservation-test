@@ -49,20 +49,10 @@ public class ConcurrentTaskSupport {
 	}
 	
 	private static final String classifySqlException(Throwable error) {
-		for (Throwable t = error; t != null; t = t.getCause()) {
-			if (t instanceof SQLException sql) {
-				String state = sql.getSQLState();
-				
-				if (state == null) {
-					continue;
-				}
-				
-				return DBMSError.find(state, PostgresError.values())
+		return DBMSError.sqlStateOf(error)
+				.map(state -> DBMSError.find(state, PostgresError.values())
 						.map(DBMSError::label)
-						.orElse("SQL 예외(" + state + ")");
-			}
-		}
-		
-		return null;
+						.orElse("SQL 예외(" + state + ")"))
+				.orElse(null);
 	}
 }

@@ -32,10 +32,13 @@ import seat_reservation.performance.application.usecase.SeatHoldUsecase;
 import seat_reservation.performance.domain.exception.SeatError;
 import seat_reservation.performance.domain.model.HoldStatus;
 import seat_reservation.performance.domain.model.SeatStatus;
+import seat_reservation.support.FailureEvidence;
+import seat_reservation.support.PostgresError;
 import seat_reservation.support.ResultCode;
 import seat_reservation.support.SeatTestData;
 import seat_reservation.support.SeatTestData.HoldRow;
 import seat_reservation.support.SeatTestData.SeatRow;
+import seat_reservation.support.ServerLog;
 
 @IntegrationTest
 public class SeatHoldConcurrencyTest {
@@ -58,6 +61,11 @@ public class SeatHoldConcurrencyTest {
 	@Autowired
 	private ApplicationContext context;
 	
+	@Autowired
+	private ServerLog serverLog;
+	
+	private FailureEvidence evidence;
+	
 	private final UUID userA = UUID.randomUUID();
 	private final UUID holdA = UUID.randomUUID();
 	
@@ -71,6 +79,12 @@ public class SeatHoldConcurrencyTest {
 	
 	@BeforeEach
 	void setUp() {
+		// 이 테스트에서 기록할 실패
+		evidence = new FailureEvidence(
+				serverLog,
+				PostgresError.DEADLOCK
+		);
+		
 		// 해당 테스트만 사용하는 좌석 할당
 		seatId = testData.createAvailableSeat();
 		

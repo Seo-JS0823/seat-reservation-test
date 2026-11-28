@@ -1,5 +1,6 @@
 package seat_reservation.support;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -19,5 +20,17 @@ public interface DBMSError {
 		return Arrays.stream(errors)
 				.filter(error -> error.sqlState().equals(sqlState))
 				.findFirst();
+	}
+	
+	/**
+	 * 예외 체인에서 처음 만나는 SQLState를 반환한다.
+	 */
+	static Optional<String> sqlStateOf(Throwable error) {
+		for (Throwable t = error; t != null; t = t.getCause()) {
+			if (t instanceof SQLException sql && sql.getSQLState() != null) {
+				return Optional.of(sql.getSQLState());
+			}
+		}
+		return Optional.empty();
 	}
 }
