@@ -4,7 +4,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 public class PostgresServerLog implements ServerLog {
 
-	private static final String LINE_PREFIX = "%m [%p] %e";
+	private static final String LINE_PREFIX = "%m [%p] %e ";
 	
 	private final PostgreSQLContainer container;
 	

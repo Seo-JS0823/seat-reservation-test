@@ -214,192 +214,67 @@ public void seatCancel(Long seatId, UUID userId, UUID holdId, LocalDateTime now)
 
 ## 데드락 로그
 ```
-java.lang.AssertionError: 
-Expecting actual:
-  "데드락(40P01)"
-to be in:
-  ["success", "SEAT_HOLDING_NOT_FOUND", "SEAT_HOLD_INVALID_STATE"]
+== A. 요약 ==
+이름: rehold-vs-cancel-01-cancel
+오류: 데드락(40P01)
 
-	at seat_reservation.performance.SeatHoldConcurrencyTest.rehold_vs_cancel(SeatHoldConcurrencyTest.java:263)
-```
-```
-Hibernate: 
-    select
-        ss1_0.seat_id,
-        ss1_0.current_hold_id,
-        ss1_0.current_reservation_id,
-        ss1_0.grade,
-        ss1_0.price,
-        ss1_0.seat_number,
-        ss1_0.session_id,
-        ss1_0.status,
-        ss1_0.version 
-    from
-        seat_reservation.session_seats ss1_0 
-    where
-        ss1_0.seat_id=?
-Hibernate: 
-    select
-        sh1_0.hold_id,
-        sh1_0.ended_at,
-        sh1_0.expires_at,
-        sh1_0.held_at,
-        sh1_0.seat_id,
-        sh1_0.status,
-        sh1_0.user_id 
-    from
-        seat_reservation.seat_holds sh1_0 
-    where
-        sh1_0.hold_id=?
-Hibernate: 
-    insert 
-    into
-        seat_reservation.seat_holds
-        (ended_at, expires_at, held_at, seat_id, status, user_id, hold_id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-Hibernate: 
-    update
-        seat_reservation.session_seats 
-    set
-        current_hold_id=?,
-        current_reservation_id=?,
-        grade=?,
-        price=?,
-        seat_number=?,
-        session_id=?,
-        status=?,
-        version=? 
-    where
-        seat_id=? 
-        and version=?
-Hibernate: 
-    select
-        ss1_0.seat_id,
-        ss1_0.current_hold_id,
-        ss1_0.current_reservation_id,
-        ss1_0.grade,
-        ss1_0.price,
-        ss1_0.seat_number,
-        ss1_0.session_id,
-        ss1_0.status,
-        ss1_0.version 
-    from
-        seat_reservation.session_seats ss1_0 
-    where
-        ss1_0.seat_id=?
-Hibernate: 
-    select
-        sh1_0.hold_id,
-        sh1_0.ended_at,
-        sh1_0.expires_at,
-        sh1_0.held_at,
-        sh1_0.seat_id,
-        s1_0.seat_id,
-        s1_0.current_hold_id,
-        s1_0.current_reservation_id,
-        s1_0.grade,
-        s1_0.price,
-        s1_0.seat_number,
-        s1_0.session_id,
-        s1_0.status,
-        s1_0.version,
-        sh1_0.status,
-        sh1_0.user_id 
-    from
-        seat_reservation.seat_holds sh1_0 
-    join
-        seat_reservation.session_seats s1_0 
-            on s1_0.seat_id=sh1_0.seat_id 
-    where
-        sh1_0.hold_id=? 
-        and sh1_0.user_id=? 
-        and sh1_0.status=?
-Hibernate: 
-    select
-        sh1_0.hold_id,
-        sh1_0.ended_at,
-        sh1_0.expires_at,
-        sh1_0.held_at,
-        sh1_0.seat_id,
-        sh1_0.status,
-        sh1_0.user_id 
-    from
-        seat_reservation.seat_holds sh1_0 
-    where
-        sh1_0.seat_id=? 
-        and sh1_0.status=?
-Hibernate: 
-    update
-        seat_reservation.seat_holds 
-    set
-        ended_at=?,
-        status=? 
-    where
-        hold_id=?
-Hibernate: 
-    update
-        seat_reservation.session_seats 
-    set
-        current_hold_id=?,
-        current_reservation_id=?,
-        grade=?,
-        price=?,
-        seat_number=?,
-        session_id=?,
-        status=?,
-        version=? 
-    where
-        seat_id=? 
-        and version=?
-Hibernate: 
-    select
-        sh1_0.hold_id,
-        sh1_0.ended_at,
-        sh1_0.expires_at,
-        sh1_0.held_at,
-        sh1_0.seat_id,
-        sh1_0.status,
-        sh1_0.user_id 
-    from
-        seat_reservation.seat_holds sh1_0 
-    where
-        sh1_0.hold_id=?
-Hibernate: 
-    update
-        seat_reservation.seat_holds 
-    set
-        ended_at=?,
-        status=? 
-    where
-        hold_id=?
-Hibernate: 
-    insert 
-    into
-        seat_reservation.seat_holds
-        (ended_at, expires_at, held_at, seat_id, status, user_id, hold_id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-Hibernate: 
-    update
-        seat_reservation.session_seats 
-    set
-        current_hold_id=?,
-        current_reservation_id=?,
-        grade=?,
-        price=?,
-        seat_number=?,
-        session_id=?,
-        status=?,
-        version=? 
-    where
-        seat_id=? 
-        and version=?
-2026-11-28T03:32:24.545+09:00  WARN 33456 --- [seat-reservation] [pool-2-thread-2] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 40P01
-2026-11-28T03:32:24.546+09:00  WARN 33456 --- [seat-reservation] [pool-2-thread-2] org.hibernate.orm.jdbc.error             : ERROR: deadlock detected
-  세부 정보: Process 71 waits for ShareLock on transaction 790; blocked by process 70.
-Process 70 waits for ShareLock on transaction 791; blocked by process 71.
+== B. 예외 체인 (바깥 → 안쪽) ==
+[0]org.springframework.dao.CannotAcquireLockException
+    could not execute statement [ERROR: deadlock detected
+  세부 정보: Process 71 waits for ShareLock on transaction 755; blocked by process 70.
+Process 70 waits for ShareLock on transaction 756; blocked by process 71.
   힌트: See server log for query details.
-  위치: while updating tuple (0,9) in relation "seat_holds"
-[ 1회] 재점유=success, 취소=데드락(40P01), version=2
+  위치: while updating tuple (0,1) in relation "seat_holds"] [update seat_reservation.seat_holds set ended_at=?,status=? where hold_id=?]; SQL [update seat_reservation.seat_holds set ended_at=?,status=? where hold_id=?]
+[1]org.hibernate.exception.LockAcquisitionException
+    could not execute statement [ERROR: deadlock detected
+  세부 정보: Process 71 waits for ShareLock on transaction 755; blocked by process 70.
+Process 70 waits for ShareLock on transaction 756; blocked by process 71.
+  힌트: See server log for query details.
+  위치: while updating tuple (0,1) in relation "seat_holds"] [update seat_reservation.seat_holds set ended_at=?,status=? where hold_id=?]
+[2]org.postgresql.util.PSQLException
+    ERROR: deadlock detected
+  세부 정보: Process 71 waits for ShareLock on transaction 755; blocked by process 70.
+Process 70 waits for ShareLock on transaction 756; blocked by process 71.
+  힌트: See server log for query details.
+  위치: while updating tuple (0,1) in relation "seat_holds"
+
+== C. 이 구간의 서버로그 ==
+2026-11-28 03:34:55.288 UTC [71] 00000 LOG:  statement: 
+2026-11-28 03:34:55.288 UTC [70] 00000 LOG:  statement: BEGIN
+2026-11-28 03:34:55.288 UTC [70] 00000 LOG:  execute <unnamed>: select ss1_0.seat_id,ss1_0.current_hold_id,ss1_0.current_reservation_id,ss1_0.grade,ss1_0.price,ss1_0.seat_number,ss1_0.session_id,ss1_0.status,ss1_0.version from seat_reservation.session_seats ss1_0 where ss1_0.seat_id=$1
+2026-11-28 03:34:55.288 UTC [70] 00000 DETAIL:  Parameters: $1 = '5594455468126942502'
+2026-11-28 03:34:55.338 UTC [71] 00000 LOG:  statement: BEGIN
+2026-11-28 03:34:55.338 UTC [70] 00000 LOG:  execute <unnamed>: select sh1_0.hold_id,sh1_0.ended_at,sh1_0.expires_at,sh1_0.held_at,sh1_0.seat_id,sh1_0.status,sh1_0.user_id from seat_reservation.seat_holds sh1_0 where sh1_0.seat_id=$1 and sh1_0.status=$2
+2026-11-28 03:34:55.338 UTC [70] 00000 DETAIL:  Parameters: $1 = '5594455468126942502', $2 = 'ACTIVE'
+2026-11-28 03:34:55.339 UTC [71] 00000 LOG:  execute <unnamed>: select sh1_0.hold_id,sh1_0.ended_at,sh1_0.expires_at,sh1_0.held_at,sh1_0.seat_id,s1_0.seat_id,s1_0.current_hold_id,s1_0.current_reservation_id,s1_0.grade,s1_0.price,s1_0.seat_number,s1_0.session_id,s1_0.status,s1_0.version,sh1_0.status,sh1_0.user_id from seat_reservation.seat_holds sh1_0 join seat_reservation.session_seats s1_0 on s1_0.seat_id=sh1_0.seat_id where sh1_0.hold_id=$1 and sh1_0.user_id=$2 and sh1_0.status=$3
+2026-11-28 03:34:55.339 UTC [71] 00000 DETAIL:  Parameters: $1 = '5dbf914f-65bd-483f-adb9-0c1d30292cef', $2 = '0549aaba-d03a-4353-a32e-1a67ab797611', $3 = 'ACTIVE'
+2026-11-28 03:34:55.343 UTC [71] 00000 LOG:  execute <unnamed>: update seat_reservation.session_seats set current_hold_id=$1,current_reservation_id=$2,grade=$3,price=$4,seat_number=$5,session_id=$6,status=$7,version=$8 where seat_id=$9 and version=$10
+2026-11-28 03:34:55.343 UTC [71] 00000 DETAIL:  Parameters: $1 = NULL, $2 = NULL, $3 = 'VIP', $4 = '10000', $5 = '1', $6 = '5594455468126942502', $7 = 'AVAILABLE', $8 = '2', $9 = '5594455468126942502', $10 = '1'
+2026-11-28 03:34:55.343 UTC [70] 00000 LOG:  execute <unnamed>: update seat_reservation.seat_holds set ended_at=$1,status=$2 where hold_id=$3
+2026-11-28 03:34:55.343 UTC [70] 00000 DETAIL:  Parameters: $1 = '2030-01-01 11:59:00', $2 = 'EXPIRED', $3 = '5dbf914f-65bd-483f-adb9-0c1d30292cef'
+2026-11-28 03:34:55.344 UTC [71] 00000 LOG:  execute <unnamed>: update seat_reservation.seat_holds set ended_at=$1,status=$2 where hold_id=$3
+2026-11-28 03:34:55.344 UTC [71] 00000 DETAIL:  Parameters: $1 = '2030-01-01 11:59:00', $2 = 'EXPIRED', $3 = '5dbf914f-65bd-483f-adb9-0c1d30292cef'
+2026-11-28 03:34:55.344 UTC [70] 00000 LOG:  execute <unnamed>: select sh1_0.hold_id,sh1_0.ended_at,sh1_0.expires_at,sh1_0.held_at,sh1_0.seat_id,sh1_0.status,sh1_0.user_id from seat_reservation.seat_holds sh1_0 where sh1_0.hold_id=$1
+2026-11-28 03:34:55.344 UTC [70] 00000 DETAIL:  Parameters: $1 = 'f3ffc394-5d15-4854-9a49-60285431a1f8'
+2026-11-28 03:34:55.345 UTC [70] 00000 LOG:  execute <unnamed>: insert into seat_reservation.seat_holds (ended_at,expires_at,held_at,seat_id,status,user_id,hold_id) values ($1,$2,$3,$4,$5,$6,$7)
+2026-11-28 03:34:55.345 UTC [70] 00000 DETAIL:  Parameters: $1 = NULL, $2 = '2030-01-01 12:05:00', $3 = '2030-01-01 12:00:00', $4 = '5594455468126942502', $5 = 'ACTIVE', $6 = '793a48c8-ca4a-43b9-80fe-9544c09a6c0d', $7 = 'f3ffc394-5d15-4854-9a49-60285431a1f8'
+2026-11-28 03:34:55.346 UTC [70] 00000 LOG:  execute <unnamed>: update seat_reservation.session_seats set current_hold_id=$1,current_reservation_id=$2,grade=$3,price=$4,seat_number=$5,session_id=$6,status=$7,version=$8 where seat_id=$9 and version=$10
+2026-11-28 03:34:55.346 UTC [70] 00000 DETAIL:  Parameters: $1 = 'f3ffc394-5d15-4854-9a49-60285431a1f8', $2 = NULL, $3 = 'VIP', $4 = '10000', $5 = '1', $6 = '5594455468126942502', $7 = 'HELD', $8 = '2', $9 = '5594455468126942502', $10 = '1'
+2026-11-28 03:34:56.344 UTC [71] 40P01 ERROR:  deadlock detected
+2026-11-28 03:34:56.344 UTC [71] 40P01 DETAIL:  Process 71 waits for ShareLock on transaction 755; blocked by process 70.
+  Process 70 waits for ShareLock on transaction 756; blocked by process 71.
+  Process 71: update seat_reservation.seat_holds set ended_at=$1,status=$2 where hold_id=$3
+  Process 70: update seat_reservation.session_seats set current_hold_id=$1,current_reservation_id=$2,grade=$3,price=$4,seat_number=$5,session_id=$6,status=$7,version=$8 where seat_id=$9 and version=$10
+2026-11-28 03:34:56.344 UTC [71] 40P01 HINT:  See server log for query details.
+2026-11-28 03:34:56.344 UTC [71] 40P01 CONTEXT:  while updating tuple (0,1) in relation "seat_holds"
+2026-11-28 03:34:56.344 UTC [71] 40P01 STATEMENT:  update seat_reservation.seat_holds set ended_at=$1,status=$2 where hold_id=$3
+2026-11-28 03:34:56.346 UTC [70] 00000 LOG:  execute S_1: COMMIT
+2026-11-28 03:34:56.355 UTC [71] 00000 LOG:  execute S_1: ROLLBACK
+2026-11-28 03:34:56.361 UTC [70] 00000 LOG:  execute <unnamed>: SELECT status, current_hold_id, version
+  FROM seat_reservation.session_seats
+  WHERE seat_id = $1
+  
+2026-11-28 03:34:56.361 UTC [70] 00000 DETAIL:  Parameters: $1 = '5594455468126942502'
+
+
 ```

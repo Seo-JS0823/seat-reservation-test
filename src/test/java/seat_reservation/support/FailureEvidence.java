@@ -48,19 +48,19 @@ public class FailureEvidence {
 			}
 			
 			String content = """
-				== A. 요약 ==
-				이름: %s
-				오류: %s
-				
-				== B. 예외 체인 (바깥 → 안쪽) ==
-				%s
-				== C. 이 구간의 서버 로그 ==
-				%s
-		""".formatted(
-				name, target.get().label(),
-				causeChain(failure),
-				waitForReport(target.get())
-				);
+					== A. 요약 ==
+					이름: %s
+					오류: %s
+					
+					== B. 예외 체인 (바깥 → 안쪽) ==
+					%s
+					== C. 이 구간의 서버로그 ==
+					%s
+					""".formatted(
+							name, target.get().label(),
+							causeChain(failure),
+							logSection(target.get())
+					);
 			
 			Files.createDirectories(DIR);
 			Path file = DIR.resolve(name + ".txt");
@@ -80,6 +80,16 @@ public class FailureEvidence {
 			}
 			
 			return log;
+		}
+		
+		private String logSection(DBMSError error) throws InterruptedException {
+			String log = waitForReport(error);
+			
+			if (serverLog.hasReport(log, error)) {
+				return log;
+			}
+			
+			return "※ 서버 로그에서 " + error.label() + " 보고를 찾지 못했음\n" + log;
 		}
 		
 		private static String causeChain(Throwable error) {

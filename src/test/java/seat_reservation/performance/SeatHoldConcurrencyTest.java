@@ -194,6 +194,7 @@ public class SeatHoldConcurrencyTest {
 	void rehold_vs_cancel(RepetitionInfo repetition) throws Exception {
 		CountDownLatch start = new CountDownLatch(1);
 		ExecutorService pool = Executors.newFixedThreadPool(2);
+		FailureEvidence.Window window = evidence.start();
 		
 		Throwable reholdError;
 		Throwable cancelError;
@@ -239,6 +240,15 @@ public class SeatHoldConcurrencyTest {
 				cancelResult,
 				seat.version()
 		);
+		
+		// 기록 대상 실패만 파일로 남긴다.
+		String name = "rehold-vs-cancel-%02d".formatted(repetition.getCurrentRepetition());
+		
+		window.save(name + "-rehold", reholdError)
+				.ifPresent(file -> System.out.println("중요한 실패 기록 저장: " + file.toAbsolutePath()));
+		
+		window.save(name + "-cancel", cancelError)
+				.ifPresent(file -> System.out.println("중요한 실패 기록 저장: " + file.toAbsolutePath()));
 		
 		// 3. 둘 다 실패할 수 없다.
 		assertThat(List.of(reholdResult, cancelResult)).contains(success);
