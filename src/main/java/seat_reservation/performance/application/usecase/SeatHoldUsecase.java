@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,18 @@ public class SeatHoldUsecase {
 					LoggerMessages.OPTIMISTIC_LOCK,
 					seatId,
 					holdId
+			);
+			
+			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS, e);
+		}
+		// 비관적 락 실패 -> SeatException 변환
+		catch (PessimisticLockingFailureException e) {
+			log.warn(
+					"[SeatHoldUsecase]: seatHold: type={} seatId={}, holdId={}, cause={}",
+					LoggerMessages.PESSIMISTIC_LCOK,
+					seatId,
+					holdId,
+					e.getMostSpecificCause().getMessage()
 			);
 			
 			throw new SeatException(SeatError.SEAT_HOLD_NOT_STATUS, e);

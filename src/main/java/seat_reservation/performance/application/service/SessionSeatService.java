@@ -63,9 +63,11 @@ public class SessionSeatService {
 				if (holding.isExpired(now)) {
 					holding.expire(now);
 					
-					seatRepo.flush();
-					
+					// 좌석 변경을 flush 앞으로 옮겨 락 획득 순서를
+					// seatCancel과 expireSeatHold와 통일시킨다.
 					seat.replaceExpiredHold(holding.getHoldId(), holdId);
+					
+					seatRepo.flush();
 					
 					usable = true;
 				}

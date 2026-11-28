@@ -289,5 +289,15 @@ public class SeatHoldConcurrencyTest {
 				SeatError.SEAT_HOLDING_NOT_FOUND.getCode(),
 				SeatError.SEAT_HOLD_INVALID_STATE.getCode()
 		);
+		
+		// 6. 잠금 순서 감시
+		// 방어 코드가 409로 감싸도 원인에 데드락이 있는지 검사
+		assertThat(PostgresError.DEADLOCK.isCauseOf(reholdError))
+				.as("재점유 예외 체인에 데드락이 있음: %s", reholdResult)
+				.isFalse();
+		
+		assertThat(PostgresError.DEADLOCK.isCauseOf(cancelError))
+				.as("취소 예외 체인에 데드락이 있음: %s", cancelResult)
+				.isFalse();
 	}
 }

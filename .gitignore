@@ -39,3 +39,10 @@ out/
 ### ENV ###
 .env
 *.env
+
+### LOG ###
+<<<<<<< Updated upstream
+logs/
+=======
+logs/
+>>>>>>> Stashed changes

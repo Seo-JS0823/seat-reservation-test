@@ -5,6 +5,10 @@ public class LoggerMessages {
 	public static final String OPTIMISTIC_LOCK = "OPTIMISTIC_LOCK";
 	
 	public static final String UNIQUE = "UNIQUE";
+
+	public static final String PESSIMISTIC_LCOK = "PESSIMISTIC_LOCK";
+	
+	public static final String UNEXPECTED = "UNEXPECTED";
 	
 	
 }

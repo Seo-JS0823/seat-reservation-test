@@ -16,6 +16,12 @@ public interface DBMSError {
 		return description() + "(" + sqlState() + ")";
 	}
 	
+	default boolean isCauseOf(Throwable error) {
+		return DBMSError.sqlStateOf(error)
+				.map(sqlState()::equals)
+				.orElse(false);
+	}
+	
 	static Optional<DBMSError> find(String sqlState, DBMSError[] errors) {
 		return Arrays.stream(errors)
 				.filter(error -> error.sqlState().equals(sqlState))
